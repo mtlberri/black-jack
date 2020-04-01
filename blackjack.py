@@ -1,5 +1,7 @@
 # Black Jack Game
 
+import numpy as np
+
 
 class Card:
 
@@ -30,9 +32,31 @@ class Card:
 
 class Deck:
 
-    pass
+    def __init__(self):
+        # Initialize the Deck with its 52 cards
+        cards = []
+        for suit in Card.suit_symbol_dict:
+            for rank in Card.rank_set:
+                cards.append(Card(rank, suit))
+        self.cards = cards
+
+    def shuffle(self):
+        """Shuffles the deck of cards"""
+        np.random.shuffle(self.cards)
+
+    def pop_card(self):
+        """Pops a card from the deck
+        :return a Card
+        """
+        # If there are still cards in the deck, pop a card. Else create a new deck and pop a card
+        if len(self.cards) > 0:
+            return self.cards.pop()
+        else:
+            self.__init__()
+            print('Using a new deck of card')
+            self.shuffle()
+            return self.cards.pop()
 
 
 if __name__ == "__main__":
-    test_card = Card(8, 'Spades')
-    print(test_card)
+    test_deck = Deck()
