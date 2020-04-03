@@ -2,6 +2,9 @@
 
 import numpy as np
 
+# Global parameter used to configure the default init value of the Dealer's bank
+dealer_default_init_bank = 50000
+
 
 class Card:
 
@@ -60,8 +63,9 @@ class Deck:
 
 class Dealer:
 
-    def __init__(self, bankroll=1000000,  player=None):
+    def __init__(self, bankroll=dealer_default_init_bank,  player=None):
         self.deck = Deck()
+        self.deck.shuffle()
         self.bankroll = bankroll
         self.cards = []
         self.player = player
@@ -84,6 +88,23 @@ class Dealer:
         # The player bet is reset to 0
         self.player.bet = 0
 
+    def cards_str(self):
+        """Returns a string representing the dealer's current cards"""
+        nb_cards = len(self.cards)
+        if nb_cards > 0:
+            line1 = f"----------  " * nb_cards + "\n"
+            line2_lst = ["|{0!s:<8}|  ".format(self.cards[x].rank) for x in range(nb_cards)]
+            line2 = ''.join(line2_lst) + "\n"
+            line3 = "|        |  " * nb_cards + "\n"
+            line4_lst = ["|{0!s:^8}|  ".format(Card.suit_symbol_dict[self.cards[x].suit]) for x in range(nb_cards)]
+            line4 = ''.join(line4_lst) + "\n"
+            line5 = line3
+            line6_lst = ["|{0!s:>8}|  ".format(self.cards[x].rank) for x in range(nb_cards)]
+            line6 = ''.join(line6_lst) + "\n"
+            line7 = line1
+            my_string = ''.join([line1, line2, line3, line4, line5, line6, line7])
+            return my_string
+
 
 class Player:
 
@@ -94,9 +115,14 @@ class Player:
         self.dealer = dealer
 
     def set_bet(self, bet):
-        """Player bets: his bet is taken out of his bankroll and set on his bet attribute"""
-        self.bankroll -= bet
-        self.bet = bet
+        """Player bets: his bet is taken out of his bankroll and set on his bet attribute
+        :return True if bankroll is sufficient to place the bet, else False"""
+        if self.bankroll >= self.bet:
+            self.bankroll -= bet
+            self.bet = bet
+            return True
+        else:
+            return False
 
     def hit(self):
         """Player hits the dealer:
@@ -112,7 +138,28 @@ class Player:
         self.bet = 0
 
 
+class Table:
+
+    def __init__(self, dealer=None, player=None):
+        self.dealer = dealer
+        self.player = player
+
+    def display(self):
+        """Display the table with the dealer and player cards, bet, status, call for action"""
+        print(f'BANK: {self.dealer.bankroll}', end='')
+        print('|'*50)
+        print(self.dealer.cards_str())
+
+
 if __name__ == "__main__":
+    # Create a test player and dealer
     test_player = Player(1000)
     test_dealer = Dealer(player=test_player)
     test_player.dealer = test_dealer
+    # Create the Table
+    table = Table(dealer=test_dealer, player=test_player)
+    # Dealer hits two cards
+    for i in range(10):
+        test_dealer.hit()
+    # Display the table
+    table.display()
