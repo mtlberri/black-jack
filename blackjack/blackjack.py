@@ -1,6 +1,8 @@
 # Black Jack Game
 
 import numpy as np
+from os import system, name
+from time import sleep
 
 # Global parameter used to configure the default init value of the Dealer's bank
 dealer_default_init_bank = 50000
@@ -12,9 +14,10 @@ class Card:
     rank_set = {2, 3, 4, 5, 6, 7, 8, 9, 10, 'J', 'Q', 'K', 'A'}
     suit_symbol_dict = {'Clubs': '\u2663', 'Diamonds': '\u2666', 'Hearts': '\u2665', 'Spades': '\u2660'}
 
-    def __init__(self, rank, suit):
+    def __init__(self, rank, suit, up=True):
         self.rank = rank
         self.suit = suit
+        self.up = up
         # Initialize the value
         if type(self.rank) == int:
             self.value = self.rank
@@ -61,13 +64,81 @@ class Deck:
             return self.cards.pop()
 
 
-class Dealer:
+# A CardHolder will be a parent Class for Dealer and Player as both hold cards and share common methods
+class CardHolder:
 
-    def __init__(self, bankroll=dealer_default_init_bank,  player=None):
+    def __init__(self):
+        self.cards = []
+
+    def cards_str(self):
+        """Returns a string representing the dealer's current cards"""
+        nb_cards = len(self.cards)
+        if nb_cards > 0:
+            card_down_block = "|"+"\u2591"*8 +"|  "
+            line1 = f"----------  " * nb_cards + "\n"
+            line2_lst = []
+            for k in range(nb_cards):
+                # If the card is up: simply add the string and display the card rank and suit
+                if self.cards[k].up:
+                    line2_lst.append("|{0!s:<8}|  ".format(self.cards[k].rank))
+                # Else (card down): hide card characteristics
+                else:
+                    line2_lst.append(card_down_block)
+            line2 = ''.join(line2_lst) + "\n"
+            line3_lst = []
+            for k in range(nb_cards):
+                if self.cards[k].up:
+                    line3_lst.append("|        |  ".format(self.cards[k].rank))
+                else:
+                    line3_lst.append(card_down_block)
+            line3 = ''.join(line3_lst) + "\n"
+            line4_lst = []
+            for k in range(nb_cards):
+                # If the card is up: simply add the string and display the card rank and suit
+                if self.cards[k].up:
+                    line4_lst.append("|{0!s:^8}|  ".format(Card.suit_symbol_dict[self.cards[k].suit]))
+                # Else (card down): hide card characteristics
+                else:
+                    line4_lst.append(card_down_block)
+            line4 = ''.join(line4_lst) + "\n"
+            line5 = line3
+            # line6_lst = ["|{0!s:>8}|  ".format(self.cards[x].rank) for x in range(nb_cards)]
+            line6_lst = []
+            for k in range(nb_cards):
+                # If the card is up: simply add the string and display the card rank and suit
+                if self.cards[k].up:
+                    line6_lst.append("|{0!s:>8}|  ".format(self.cards[k].rank))
+                # Else (card down): hide card characteristics
+                else:
+                    line6_lst.append("|        |  ")
+            line6_lst = []
+            for k in range(nb_cards):
+                if self.cards[k].up:
+                    line6_lst.append("|{0!s:>8}|  ".format(self.cards[k].rank))
+                else:
+                    line6_lst.append(card_down_block)
+            line6 = ''.join(line6_lst) + "\n"
+            line7 = line1
+            my_string = ''.join([line1, line2, line3, line4, line5, line6, line7])
+            return my_string
+        # Else, if no cards in the deck, return an empty spot for the card
+        else:
+            return "----------\n" \
+            "|        |\n" \
+            "|        |\n" \
+            "|        |\n" \
+            "|        |\n" \
+            "|        |\n" \
+            "----------\n"
+
+
+class Dealer(CardHolder):
+
+    def __init__(self, bankroll=dealer_default_init_bank, player=None):
+        CardHolder.__init__(self)
         self.deck = Deck()
         self.deck.shuffle()
         self.bankroll = bankroll
-        self.cards = []
         self.player = player
 
     def hit(self):
@@ -88,30 +159,13 @@ class Dealer:
         # The player bet is reset to 0
         self.player.bet = 0
 
-    def cards_str(self):
-        """Returns a string representing the dealer's current cards"""
-        nb_cards = len(self.cards)
-        if nb_cards > 0:
-            line1 = f"----------  " * nb_cards + "\n"
-            line2_lst = ["|{0!s:<8}|  ".format(self.cards[x].rank) for x in range(nb_cards)]
-            line2 = ''.join(line2_lst) + "\n"
-            line3 = "|        |  " * nb_cards + "\n"
-            line4_lst = ["|{0!s:^8}|  ".format(Card.suit_symbol_dict[self.cards[x].suit]) for x in range(nb_cards)]
-            line4 = ''.join(line4_lst) + "\n"
-            line5 = line3
-            line6_lst = ["|{0!s:>8}|  ".format(self.cards[x].rank) for x in range(nb_cards)]
-            line6 = ''.join(line6_lst) + "\n"
-            line7 = line1
-            my_string = ''.join([line1, line2, line3, line4, line5, line6, line7])
-            return my_string
 
-
-class Player:
+class Player (CardHolder):
 
     def __init__(self, bankroll, dealer=None):
+        CardHolder.__init__(self)
         self.bankroll = bankroll
         self.bet = 0
-        self.cards = []
         self.dealer = dealer
 
     def set_bet(self, bet):
@@ -138,17 +192,40 @@ class Player:
         self.bet = 0
 
 
+def clear():
+    """Define a function to clear the screen in terminal"""
+    # for windows
+    if name == 'nt':
+        _ = system('cls')
+    # for mac and linux(here, os.name is 'posix')
+    else:
+        _ = system('clear')
+
+
 class Table:
 
     def __init__(self, dealer=None, player=None):
         self.dealer = dealer
         self.player = player
 
+    # define our clear function
+
     def display(self):
         """Display the table with the dealer and player cards, bet, status, call for action"""
-        print(f'BANK: {self.dealer.bankroll}', end='')
-        print('|'*50)
+        # Start by clearing the terminal
+        clear()
+        print('-'*10 + '{0!s:<16}'.format(' DEALER \u23ea') + '-'*10)
+        # Bankroll and action
+        print('{0!s:<10}${1:>11,}'.format('BANKROLL:', self.dealer.bankroll))
         print(self.dealer.cards_str())
+        # print(f'BET \u229a {self.player.bet}')
+        print('{0!s:>10}${1:>11,}'.format('BET: ', self.player.bet))
+        # Player's side
+        print(self.player.cards_str())
+        # Print bars meant to visually represent the amount of money in the bank
+        # print('.'*5)
+        print('{0!s:<10}${1:>11,}'.format('BANKROLL:', self.player.bankroll))
+        print('-'*10 + '{0!s:<16}'.format(' PLAYER \u23ea') + '-'*10)
 
 
 if __name__ == "__main__":
@@ -159,7 +236,10 @@ if __name__ == "__main__":
     # Create the Table
     table = Table(dealer=test_dealer, player=test_player)
     # Dealer hits two cards
-    for i in range(10):
+    for i in range(3):
         test_dealer.hit()
+        if i == 1:
+            test_dealer.cards[-1].up = False
+        test_player.hit()
     # Display the table
     table.display()
