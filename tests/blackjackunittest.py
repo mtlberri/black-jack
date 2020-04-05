@@ -38,7 +38,7 @@ class TestBlackJack(unittest.TestCase):
         test_player.hit()
         test_player.bust()
         self.assertEqual((test_player.bankroll, test_player.bet, test_dealer.bankroll),
-                         (900, 0, bj.dealer_default_init_bank + 100))
+                         (900, 0, 50000 + 100))
 
     def test_dealer_hit(self):
         test_dealer = bj.Dealer()
@@ -55,7 +55,7 @@ class TestBlackJack(unittest.TestCase):
         test_player.dealer = test_dealer
         test_dealer.beat()
         self.assertEqual((test_dealer.bankroll, test_player.bankroll, test_player.bet),
-                         (bj.dealer_default_init_bank + 400, 600, 0))
+                         (50000 + 400, 600, 0))
 
     def test_dealer_bust(self):
         # Test player and dealer initialization
@@ -65,10 +65,18 @@ class TestBlackJack(unittest.TestCase):
         test_player.dealer = test_dealer
         test_dealer.bust()
         self.assertEqual((test_dealer.bankroll, test_player.bankroll, test_player.bet),
-                         (bj.dealer_default_init_bank - 800, 1800, 0))
+                         (50000 - 800, 1800, 0))
 
-
-
+    def test_dealer_check_blackjack(self):
+        # Test player and dealer initialization
+        test_player = bj.Player(1000)
+        test_player.set_bet(400)
+        test_dealer = bj.Dealer(player=test_player)
+        test_player.dealer = test_dealer
+        # Give the player a Black Jack hand
+        test_player.cards.append(bj.Card('A', 'Clubs'))
+        test_player.cards.append(bj.Card('K', 'Diamonds'))
+        self.assertEqual(test_dealer.check_if_blackjack(), True)
 
 if __name__ == "__main__":
     unittest.main()
