@@ -1,5 +1,5 @@
 import unittest
-from blackjack import blackjack as bj
+from blackjack import blackjackclasses as bj
 
 
 class TestBlackJack(unittest.TestCase):
@@ -66,6 +66,8 @@ class TestBlackJack(unittest.TestCase):
         test_dealer.bust()
         self.assertEqual((test_dealer.bankroll, test_player.bankroll, test_player.bet),
                          (bj.dealer_default_init_bank - 800, 1800, 0))
+
+
 
 
 if __name__ == "__main__":
