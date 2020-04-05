@@ -30,9 +30,16 @@ if __name__ == "__main__":
         player.cards = []
         dealer.cards = []
         player.bust_status = False
+        # Check the deck of cards and create a new one if running low
+        if len(dealer.deck.cards) < 20:
+            dealer.deck = bj.Deck()
+
+        # Start with the player
+        player.turn = True
+        dealer.turn = False
         # Display the table
         table.display()
-        # Place a bet
+        # Place a bet (get user input for bet)
         while True:
             try:
                 bet = int(input('Place your bet:'))
@@ -45,6 +52,10 @@ if __name__ == "__main__":
                 print(f'Please enter a valid bet amount (in between ${minimum_bet:,} and ${player.bankroll:,})')
             except Exception:
                 print('Please enter a valid bet amount')
+
+        # Switch to dealer
+        player.turn = False
+        dealer.turn = True
         # Dealer deals cards (1 for player, 1 for dealer, 1 for player, 1 for dealer face down)
         player.hit()
         table.display()
@@ -55,12 +66,18 @@ if __name__ == "__main__":
         dealer.hit(up=False)
         table.display()
         # Dealer check the cards distributed and verify if there is a Black Jack
+        if dealer.check_if_blackjack():
+            player.win_with_blackjack()
+            print('\n########## Player Wins with Black Jack !!!')
+            sleep(5)
+            continue
 
         # Player Hits or Stays
         # Loop as long as it it the player's turn (as long as he does not Bust or Stay)
+        dealer.turn = False
         player.turn = True
+        table.display()
         while player.turn:
-
             # Get the player action
             while True:
                 try:
@@ -76,39 +93,70 @@ if __name__ == "__main__":
                         raise InvalidAction
                 except InvalidAction:
                     print(f'Please enter a valid action ("H" for Hit or "S" for Stay)')
-
             # If the player is still under 21, he can continue to chose to either Hit or Stay
             if player.cards_value() < 21:
                 continue
             # Else if 21, then it is the dealer's turn (still possibility of tie if dealer gets 21 as well)
             elif player.cards_value() == 21:
-                print('Player has 21')
+                print('\n########## Player has 21 !!!')
                 player.turn = False
                 break
             # Else player Bust
             else:
                 player.bust()
-                print('\n########## Player Bust !!! \u26b0')
-                sleep(3)
+                print('\n########## Player Bust !!!')
+                sleep(5)
                 player.turn = False
                 break
-
-        # If the player is out of his turn because he Bust, then go back straight at the start of the game loop
+        # If the player Bust, then start new hand (back on top)
         if player.bust_status:
             continue
 
-        # If player not bust, It is now the turn of the dealer
+        # If player not bust, it is now the turn of the dealer
+        player.turn = False
         dealer.turn = True
         # Dealer reveals his second card
         dealer.cards[-1].up = True
         table.display()
+
+        # Check if Dealer Beat
+        if (dealer.cards_value() > player.cards_value()) and \
+                (dealer.cards_value() <= 21):
+            dealer.beat()
+            sleep(2)
+            print('\n########## Dealer Beat the player !!!')
+            sleep(5)
+            continue
+
         # Dealer Hits until he Beats or Busts
-        while dealer.cards_value() < 21:
+        while True:
             dealer.hit()
             table.display()
-        # End of that hand
-        print('END OF THAT HAND')
-        # Refresh Bankroll amounts
+            # Check if the dealer has beat
+            if (dealer.cards_value() > player.cards_value()) and \
+                    (dealer.cards_value() <= 21):
+                dealer.beat()
+                sleep(2)
+                print('\n########## Dealer Beat the player !!!')
+                sleep(5)
+                break
+            elif dealer.cards_value() == player.cards_value() == 21:
+                player.tie()
+                sleep(2)
+                print('\n########## This is a Tie !!!')
+                sleep(5)
+                break
+            elif dealer.cards_value() < 21:
+                continue
+            # Else, dealer Busts
+            elif dealer.cards_value() > 21:
+                dealer.bust()
+                sleep(2)
+                print('\n########## Dealer has Bust !!!')
+                sleep(5)
+                break
+            else:
+                print('Unforeseen Dealer condition - Debug')
 
-        # Ask the player if he wants to continue
-        player_is_playing = False
+        # Continue playing
+        player_is_playing = True

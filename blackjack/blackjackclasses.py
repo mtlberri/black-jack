@@ -139,7 +139,7 @@ class CardHolder:
 
 class Dealer(CardHolder):
 
-    def __init__(self, bankroll, player=None):
+    def __init__(self, bankroll=50000, player=None):
         CardHolder.__init__(self)
         self.deck = Deck()
         self.deck.shuffle()
@@ -165,6 +165,10 @@ class Dealer(CardHolder):
         self.player.bankroll += self.player.bet * 3
         # The player bet is reset to 0
         self.player.bet = 0
+
+    def check_if_blackjack(self):
+        """:return True if the player was distributed a BlackJac"""
+        return self.player.cards_value() == 21 and len(self.player.cards) == 2
 
 
 class Player (CardHolder):
@@ -200,6 +204,19 @@ class Player (CardHolder):
         self.dealer.bankroll += self.bet
         self.bet = 0
 
+    def win_with_blackjack(self):
+        """Player wins with blackjack. Blackjack plays 3 to 2"""
+        # Gets bet back and get paid 3 to 2 by the dealer (1 + 3/2 = 5/2)
+        self.bankroll += self.bet * 5/2
+        self.bet = 0
+
+    def tie(self):
+        """Player and Dealer both get 21"""
+        # Get the bet back and reset
+        self.bankroll += self.bet
+        self.bet = 0
+
+
 def clear():
     """Define a function to clear the screen in terminal"""
     # for windows
@@ -224,7 +241,10 @@ class Table:
         sleep(0.5)
         # Start by clearing the terminal
         clear()
-        print('-'*10 + '{0!s:<16}'.format(' DEALER \u23ea') + '-'*10)
+        if self.dealer.turn:
+            print('-'*10 + '{0!s:<16}'.format(' DEALER \u23ea') + '-'*10)
+        else:
+            print('-' * 10 + '{0!s:<16}'.format(' DEALER ') + '-' * 10)
         # Bankroll and action
         print('{0!s:<10}${1:>11,}'.format('BANKROLL:', self.dealer.bankroll))
         print(self.dealer.cards_str())
@@ -235,6 +255,8 @@ class Table:
         # Print bars meant to visually represent the amount of money in the bank
         # print('.'*5)
         print('{0!s:<10}${1:>11,}'.format('BANKROLL:', self.player.bankroll))
-        print('-'*10 + '{0!s:<16}'.format(' PLAYER \u23ea') + '-'*10)
-
+        if self.player.turn:
+            print('-'*10 + '{0!s:<16}'.format(' PLAYER \u23ea') + '-'*10)
+        else:
+            print('-' * 10 + '{0!s:<16}'.format(' PLAYER ') + '-' * 10)
 
