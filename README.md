@@ -16,7 +16,7 @@ This projects uses numpy, os and time.
 
 ### Installing
 
-Clone the repository on your local machine, and run:
+Clone the repository on your local machine.
 
 ## Using
 
