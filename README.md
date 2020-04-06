@@ -8,8 +8,6 @@ Using simplified rules.
 
 ![BlackJack](https://mtlberriawsbucket.s3.us-east-2.amazonaws.com/blackjack/black-jack-screenshot.png)
 
-![BlackJack_Gif](https://mtlberriawsbucket.s3.us-east-2.amazonaws.com/blackjack/Black_Jack_Python_Dev.gif)
-
 ## Getting Started
 
 ### Prerequisites
