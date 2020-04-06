@@ -39,6 +39,7 @@ if __name__ == "__main__":
         dealer.turn = False
         # Display the table
         table.display()
+
         # Place a bet (get user input for bet)
         while True:
             try:
@@ -56,6 +57,7 @@ if __name__ == "__main__":
         # Switch to dealer
         player.turn = False
         dealer.turn = True
+
         # Dealer deals cards (1 for player, 1 for dealer, 1 for player, 1 for dealer face down)
         player.hit()
         table.display()
@@ -157,6 +159,7 @@ if __name__ == "__main__":
                 break
             else:
                 print('Unforeseen Dealer condition - Debug')
+
 
         # Continue playing
         player_is_playing = True
