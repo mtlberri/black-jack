@@ -21,7 +21,7 @@ class Card:
         elif self.rank in {'J', 'Q', 'K'}:
             self.value = 10
         elif self.rank == 'A':
-            # self.value = (1, 11)
+            # Default to 11, ref. to cards_value method for Aces management (11 --> 1)
             self.value = 11
             # I will have to come back to that later because Ace should give the choice for 1 or 11
 
@@ -70,6 +70,8 @@ class CardHolder:
         self.cards = []
         # Turn will be used to monitor whose turn it is to play
         self.turn = False
+        # Property to count how many Aces (worth 11) the Card Holder has
+        self.aces = 0
 
     def cards_str(self):
         """Returns a string representing the dealer's current cards"""
@@ -134,7 +136,13 @@ class CardHolder:
 
     def cards_value(self):
         """:return the total value of the cards of the Card Holder"""
-        return sum([x.value for x in self.cards])
+        cards_v = sum([x.value for x in self.cards])
+        while cards_v > 21 and self.aces:
+            # Remove an Ace from the Card Holder (11 --> 1)
+            self.aces -= 1
+            # Adjust the value of the cards
+            cards_v -= 10
+        return cards_v
 
 
 class Dealer(CardHolder):
@@ -151,6 +159,8 @@ class Dealer(CardHolder):
         a card is popped out of the dealer's deck and appended to the dealer's cards"""
         card = self.deck.pop_card()
         card.up = up
+        if card.rank == 'Ace':
+            self.aces += 1
         self.cards.append(card)
 
     def beat(self):
@@ -159,15 +169,15 @@ class Dealer(CardHolder):
         self.player.bet = 0
 
     def bust(self):
-        """Player busts: the player gets his bet back and gets paid 2x his bet by the dealer"""
-        self.bankroll -= self.player.bet * 2
+        """Player busts: the player gets his bet back and gets paid 1x his bet by the dealer"""
+        self.bankroll -= self.player.bet
         # The player gets his bet back (x1) and get paid 2x his bet by the dealer
-        self.player.bankroll += self.player.bet * 3
+        self.player.bankroll += self.player.bet * 2
         # The player bet is reset to 0
         self.player.bet = 0
 
     def check_if_blackjack(self):
-        """:return True if the player was distributed a BlackJac"""
+        """:return True if the player was distributed a BlackJack"""
         return self.player.cards_value() == 21 and len(self.player.cards) == 2
 
 
@@ -193,7 +203,10 @@ class Player (CardHolder):
     def hit(self):
         """Player hits the dealer:
         a card is popped out of the dealer's deck and appended to the player's list of cards"""
-        self.cards.append(self.dealer.deck.pop_card())
+        card = self.dealer.deck.pop_card()
+        if card.rank == 'Ace':
+            self.aces += 1
+        self.cards.append(card)
 
     def stay(self):
         pass
@@ -207,10 +220,11 @@ class Player (CardHolder):
     def win_with_blackjack(self):
         """Player wins with blackjack. Blackjack plays 3 to 2"""
         # Gets bet back and get paid 3 to 2 by the dealer (1 + 3/2 = 5/2)
+        self.dealer.bankroll -= self.bet * 3/2
         self.bankroll += self.bet * 5/2
         self.bet = 0
 
-    def tie(self):
+    def push(self):
         """Player and Dealer both get 21"""
         # Get the bet back and reset
         self.bankroll += self.bet

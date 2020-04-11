@@ -65,7 +65,7 @@ class TestBlackJack(unittest.TestCase):
         test_player.dealer = test_dealer
         test_dealer.bust()
         self.assertEqual((test_dealer.bankroll, test_player.bankroll, test_player.bet),
-                         (50000 - 800, 1800, 0))
+                         (50000 - 400, 1400, 0))
 
     def test_dealer_check_blackjack(self):
         # Test player and dealer initialization
@@ -77,6 +77,21 @@ class TestBlackJack(unittest.TestCase):
         test_player.cards.append(bj.Card('A', 'Clubs'))
         test_player.cards.append(bj.Card('K', 'Diamonds'))
         self.assertEqual(test_dealer.check_if_blackjack(), True)
+
+    def test_Aces_Adjustment(self):
+        # Test player and dealer initialization
+        test_dealer = bj.Dealer()
+        test_player = bj.Player(1000)
+        # Dealer hand: AAJ7 = 19
+        test_dealer.cards = [bj.Card('A', 'Clubs'), bj.Card('A', 'Clubs'),
+                             bj.Card('J', 'Clubs'), bj.Card(7, 'Clubs')]
+        test_dealer.aces = 2
+        # Player hand A2 = 13
+        test_player.cards = [bj.Card('A', 'Clubs'), bj.Card(2, 'Clubs')]
+        test_player.aces = 1
+        self.assertEqual((test_dealer.cards_value(), test_player.cards_value()),
+                         (19, 13))
+
 
 if __name__ == "__main__":
     unittest.main()

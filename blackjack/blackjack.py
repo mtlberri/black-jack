@@ -23,9 +23,9 @@ if __name__ == "__main__":
     player.dealer = dealer
     table = bj.Table(dealer=dealer, player=player)
     # Initialize the player as being playing
-    player_is_playing = True
+    game_is_on = True
 
-    while player_is_playing:
+    while game_is_on:
         # Reset the player and dealer cards
         player.cards = []
         dealer.cards = []
@@ -79,7 +79,9 @@ if __name__ == "__main__":
         dealer.turn = False
         player.turn = True
         table.display()
+
         while player.turn:
+
             # Get the player action
             while True:
                 try:
@@ -95,7 +97,8 @@ if __name__ == "__main__":
                         raise InvalidAction
                 except InvalidAction:
                     print(f'Please enter a valid action ("H" for Hit or "S" for Stay)')
-            # If the player is still under 21, he can continue to chose to either Hit or Stay
+
+            # Evaluate the player situation:
             if player.cards_value() < 21:
                 continue
             # Else if 21, then it is the dealer's turn (still possibility of tie if dealer gets 21 as well)
@@ -110,6 +113,7 @@ if __name__ == "__main__":
                 sleep(5)
                 player.turn = False
                 break
+
         # If the player Bust, then start new hand (back on top)
         if player.bust_status:
             continue
@@ -130,7 +134,7 @@ if __name__ == "__main__":
             sleep(5)
             continue
 
-        # Dealer Hits until he Beats or Busts
+        # Else, Dealer Hits until he Beats or Busts
         while True:
             dealer.hit()
             table.display()
@@ -143,7 +147,7 @@ if __name__ == "__main__":
                 sleep(5)
                 break
             elif dealer.cards_value() == player.cards_value() == 21:
-                player.tie()
+                player.push()
                 sleep(2)
                 print('\n########## This is a Tie !!!')
                 sleep(5)
@@ -162,4 +166,4 @@ if __name__ == "__main__":
 
 
         # Continue playing
-        player_is_playing = True
+        game_is_on = True
